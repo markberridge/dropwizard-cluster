@@ -1,0 +1,9 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 8980
+  adminConnectors:
+    - type: http
+      port: 8981
+      
+clusterPort: 0

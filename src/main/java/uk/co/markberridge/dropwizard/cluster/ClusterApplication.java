@@ -1,0 +1,56 @@
+package uk.co.markberridge.dropwizard.cluster;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+
+import io.dropwizard.Application;
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import uk.co.markberridge.dropwizard.cluster.resource.PingResource;
+import akka.actor.ActorSystem;
+import akka.actor.Props;
+
+/**
+ * Main dropwizard service
+ */
+public class ClusterApplication extends Application<ClusterConfiguration> {
+
+    // private static final Logger log =
+    // LoggerFactory.getLogger(EnvironmentHealthApplication.class);
+
+    public static void main(String... args) throws Exception {
+        if (args.length == 0) {
+            String configFileName = new OverrideConfig("cluster.yml").getName();
+            new ClusterApplication().run(new String[] { "server", configFileName });
+        } else {
+            new ClusterApplication().run(args);
+        }
+    }
+
+    @Override
+    public String getName() {
+        return "cluster";
+    }
+
+    @Override
+    public void initialize(Bootstrap<ClusterConfiguration> bootstrap) {
+        //
+    }
+
+    @Override
+    public void run(ClusterConfiguration config, Environment environment) throws Exception {
+
+        // Override the configuration of the port
+        Config c = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + config.getClusterPort()).withFallback(
+                ConfigFactory.load());
+
+        // Create an Akka system
+        ActorSystem system = ActorSystem.create("ClusterSystem", c);
+
+        // Create an actor that handles cluster domain events
+        system.actorOf(Props.create(ClusterListener.class), "clusterListener");
+
+        // Resources
+        environment.jersey().register(new PingResource());
+    }
+}
