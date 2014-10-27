@@ -1,14 +1,16 @@
 package uk.co.markberridge.dropwizard.cluster;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
-
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import uk.co.markberridge.dropwizard.cluster.resource.PingResource;
 import akka.actor.ActorSystem;
+import akka.actor.PoisonPill;
 import akka.actor.Props;
+import akka.contrib.pattern.ClusterSingletonManager;
+
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 
 /**
  * Main dropwizard service
@@ -48,9 +50,15 @@ public class ClusterApplication extends Application<ClusterConfiguration> {
         ActorSystem system = ActorSystem.create("ClusterSystem", c);
 
         // Create an actor that handles cluster domain events
-        system.actorOf(Props.create(ClusterListener.class), "clusterListener");
+//        system.actorOf(Props.create(ClusterListener.class), "clusterListener");
+        system.actorOf(
+                ClusterSingletonManager.defaultProps(Props.create(ClusterListener.class), "clusterListener",
+                        PoisonPill.getInstance(), null), "singleton");
 
         // Resources
         environment.jersey().register(new PingResource());
+
+        // Health Checks
+        environment.healthChecks().register("healthy", new AlwaysHealthyHealthCheck());
     }
 }

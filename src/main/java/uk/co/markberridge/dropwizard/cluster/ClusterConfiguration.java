@@ -15,5 +15,4 @@ public class ClusterConfiguration extends Configuration {
     public void setClusterPort(int clusterPort) {
         this.clusterPort = clusterPort;
     }
-
 }
