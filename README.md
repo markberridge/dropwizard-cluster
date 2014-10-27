@@ -1,4 +1,4 @@
 dropwizard-cluster
 ==================
 
-Playing with dropwizard and akka.
+An implementation of a cluster singleton using dropwizard and akka.
