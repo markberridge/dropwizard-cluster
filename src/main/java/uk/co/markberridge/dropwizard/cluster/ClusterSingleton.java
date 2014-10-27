@@ -21,8 +21,13 @@ public class ClusterSingleton extends UntypedActor {
 
     private final Cluster cluster;
     private final ScheduledExecutorService scheduledExecutorService;
+    private final SingletonHealthCheck healthCheck;
 
-    public ClusterSingleton() {
+    public ClusterSingleton(SingletonHealthCheck healthCheck) {
+
+        // notify the health check that I am now the master
+        this.healthCheck = healthCheck;
+        this.healthCheck.setMaster(true);
 
         this.cluster = Cluster.get(getContext().system());
 
@@ -37,6 +42,7 @@ public class ClusterSingleton extends UntypedActor {
 
     @Override
     protected void finalize() throws Throwable {
+        // terminate the executor service
         scheduledExecutorService.shutdown();
     }
 

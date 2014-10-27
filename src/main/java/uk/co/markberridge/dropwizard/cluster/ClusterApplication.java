@@ -47,23 +47,20 @@ public class ClusterApplication extends Application<ClusterConfiguration> {
 
         log.info("Starting {} on cluster port {}", getClass().getSimpleName(), config.getClusterPort());
 
+        // Resources
+        environment.jersey().register(new PingResource());
+
+        // Health Checks
+        final SingletonHealthCheck singletonHealthCheck = new SingletonHealthCheck();
+        environment.healthChecks().register("singleton", singletonHealthCheck);
+
         // Override the configuration of the port
         Config c = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + config.getClusterPort()).withFallback(
                 ConfigFactory.load());
 
         // Create an Akka system
         ActorSystem system = ActorSystem.create("ClusterSystem", c);
-
-        // Create an actor that handles cluster domain events
-        // system.actorOf(Props.create(ClusterListener.class),
-        // "clusterListener");
-        system.actorOf(ClusterSingletonManager.defaultProps(Props.create(ClusterSingleton.class), "ClusterSingleton",
-                PoisonPill.getInstance(), null));
-
-        // Resources
-        environment.jersey().register(new PingResource());
-
-        // Health Checks
-        environment.healthChecks().register("healthy", new AlwaysHealthyHealthCheck());
+        system.actorOf(ClusterSingletonManager.defaultProps(Props.create(ClusterSingleton.class, singletonHealthCheck),
+                "ClusterSingleton", PoisonPill.getInstance(), null));
     }
 }
