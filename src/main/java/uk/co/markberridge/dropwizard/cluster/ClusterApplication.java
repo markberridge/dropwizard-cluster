@@ -3,6 +3,10 @@ package uk.co.markberridge.dropwizard.cluster;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.co.markberridge.dropwizard.cluster.resource.PingResource;
 import akka.actor.ActorSystem;
 import akka.actor.PoisonPill;
@@ -17,8 +21,7 @@ import com.typesafe.config.ConfigFactory;
  */
 public class ClusterApplication extends Application<ClusterConfiguration> {
 
-    // private static final Logger log =
-    // LoggerFactory.getLogger(EnvironmentHealthApplication.class);
+    private static final Logger log = LoggerFactory.getLogger(ClusterApplication.class);
 
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
@@ -42,6 +45,8 @@ public class ClusterApplication extends Application<ClusterConfiguration> {
     @Override
     public void run(ClusterConfiguration config, Environment environment) throws Exception {
 
+        log.info("Starting {} on cluster port {}", getClass().getSimpleName(), config.getClusterPort());
+
         // Override the configuration of the port
         Config c = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + config.getClusterPort()).withFallback(
                 ConfigFactory.load());
@@ -50,10 +55,10 @@ public class ClusterApplication extends Application<ClusterConfiguration> {
         ActorSystem system = ActorSystem.create("ClusterSystem", c);
 
         // Create an actor that handles cluster domain events
-//        system.actorOf(Props.create(ClusterListener.class), "clusterListener");
-        system.actorOf(
-                ClusterSingletonManager.defaultProps(Props.create(ClusterListener.class), "clusterListener",
-                        PoisonPill.getInstance(), null), "singleton");
+        // system.actorOf(Props.create(ClusterListener.class),
+        // "clusterListener");
+        system.actorOf(ClusterSingletonManager.defaultProps(Props.create(ClusterSingleton.class), "ClusterSingleton",
+                PoisonPill.getInstance(), null));
 
         // Resources
         environment.jersey().register(new PingResource());
