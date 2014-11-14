@@ -1,4 +1,4 @@
-package uk.co.markberridge.dropwizard.cluster;
+package uk.co.markberridge.dropwizard.cluster.sample;
 
 import java.io.File;
 

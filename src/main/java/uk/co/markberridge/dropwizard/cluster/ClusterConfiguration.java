@@ -1,18 +1,10 @@
 package uk.co.markberridge.dropwizard.cluster;
 
-import io.dropwizard.Configuration;
-import io.dropwizard.validation.PortRange;
+import org.hibernate.validator.constraints.NotEmpty;
 
-public class ClusterConfiguration extends Configuration {
+public interface ClusterConfiguration {
 
-    @PortRange
-    private int clusterPort;
+    @NotEmpty
+    String getClusterConfig();
 
-    public int getClusterPort() {
-        return clusterPort;
-    }
-
-    public void setClusterPort(int clusterPort) {
-        this.clusterPort = clusterPort;
-    }
 }

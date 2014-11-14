@@ -1,9 +1,5 @@
 package uk.co.markberridge.dropwizard.cluster;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +11,16 @@ import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
 import akka.cluster.ClusterEvent.UnreachableMember;
 
+import com.google.common.base.Supplier;
+
 public class ClusterSingleton extends UntypedActor {
 
     private static final Logger log = LoggerFactory.getLogger(ClusterSingleton.class);
 
     private final Cluster cluster;
-    private final ScheduledExecutorService scheduledExecutorService;
     private final SingletonHealthCheck healthCheck;
 
-    public ClusterSingleton(SingletonHealthCheck healthCheck) {
+    public ClusterSingleton(SingletonHealthCheck healthCheck, Supplier<Runnable> action) {
 
         // notify the health check that I am now the master
         this.healthCheck = healthCheck;
@@ -31,19 +28,10 @@ public class ClusterSingleton extends UntypedActor {
 
         this.cluster = Cluster.get(getContext().system());
 
-        // Create a scheduled executor service to log that I am the singleton
-        this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-            public void run() {
-                ClusterSingleton.log.info("########## Now I am the master");
-            }
-        }, 1, 1, TimeUnit.SECONDS);
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-        // terminate the executor service
-        scheduledExecutorService.shutdown();
+        if (action.get() == null) {
+            throw new IllegalStateException("No action has been specified to run as singleton!");
+        }
+        action.get().run();
     }
 
     @Override
@@ -62,15 +50,15 @@ public class ClusterSingleton extends UntypedActor {
     public void onReceive(Object message) {
         if (message instanceof MemberUp) {
             MemberUp mUp = (MemberUp) message;
-            log.info("########## Member is Up: {}", mUp.member());
+            log.debug("########## Member is Up: {}", mUp.member());
 
         } else if (message instanceof UnreachableMember) {
             UnreachableMember mUnreachable = (UnreachableMember) message;
-            log.info("########## Member detected as unreachable: {}", mUnreachable.member());
+            log.debug("########## Member detected as unreachable: {}", mUnreachable.member());
 
         } else if (message instanceof MemberRemoved) {
             MemberRemoved mRemoved = (MemberRemoved) message;
-            log.info("########## Member is Removed: {}", mRemoved.member());
+            log.debug("########## Member is Removed: {}", mRemoved.member());
 
         } else if (message instanceof MemberEvent) {
             // ignore
