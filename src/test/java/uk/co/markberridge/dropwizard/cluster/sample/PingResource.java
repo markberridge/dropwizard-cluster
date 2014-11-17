@@ -1,4 +1,4 @@
-package uk.co.markberridge.dropwizard.cluster.resource;
+package uk.co.markberridge.dropwizard.cluster.sample;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
