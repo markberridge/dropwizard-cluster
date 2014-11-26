@@ -13,7 +13,7 @@ import uk.co.markberridge.dropwizard.cluster.ClusterSingletonBundle;
  */
 public class SampleClusterApplication extends Application<SampleClusterApplicationConfiguration> {
 
-    private static final ClusterSingletonBundle singletonBundle= new ClusterSingletonBundle();
+    private static final ClusterSingletonBundle singletonBundle = new ClusterSingletonBundle();
 
     public static void main(String... args) throws Exception {
         if (args.length == 0) {
@@ -36,13 +36,15 @@ public class SampleClusterApplication extends Application<SampleClusterApplicati
 
     @Override
     public void run(SampleClusterApplicationConfiguration config, Environment environment) throws Exception {
-        
+
         environment.jersey().register(PingResource.class);
-        
+
         ScheduledExecutorService executorService = environment.lifecycle()
-                .scheduledExecutorService("singletonThread").threads(1).build();
-        
-        singletonBundle.initializeSingletonAction(new SingletonInitializationAction(executorService));
-        
+                                                              .scheduledExecutorService("singletonThread")
+                                                              .threads(1)
+                                                              .build();
+
+        singletonBundle.onBecomingActiveSingleton(new ScheduleLoggingThatIAmMaster(executorService));
+
     }
 }
