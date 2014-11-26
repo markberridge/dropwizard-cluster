@@ -1,14 +1,15 @@
-#This node is a member of the cluster
+#This node is explicitly disabled through config
 
 server:
   applicationConnectors:
     - type: http
-      port: 8180
+      port: 8580
   adminConnectors:
     - type: http
-      port: 8181
+      port: 8581
       
 akkaConfiguration: 
+  enabled: false
   configuration: >
     akka {
       actor {
@@ -18,7 +19,7 @@ akkaConfiguration:
         log-remote-lifecycle-events = off
         netty.tcp {
           hostname = "127.0.0.1"
-          port = 8182
+          port = 8282
         }
       }
     
@@ -31,3 +32,4 @@ akkaConfiguration:
         auto-down-unreachable-after = 10s
       }
     }
+    

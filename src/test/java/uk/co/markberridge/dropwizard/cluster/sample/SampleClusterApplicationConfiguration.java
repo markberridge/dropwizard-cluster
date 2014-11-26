@@ -5,10 +5,10 @@ import uk.co.markberridge.dropwizard.cluster.ClusterConfiguration;
 
 public class SampleClusterApplicationConfiguration extends Configuration implements ClusterConfiguration {
 
-    private String clusterConfig;
+    private AkkaConfiguration akkaConfiguration = AkkaConfiguration.clusteringDisabledByDefault();
 
     @Override
-    public String getClusterConfig() {
-        return clusterConfig;
+    public AkkaConfiguration getAkkaConfiguration() {
+        return akkaConfiguration;
     }
 }

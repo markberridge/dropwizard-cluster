@@ -6,12 +6,12 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingletonInitializationAction implements Runnable{
+public class ScheduleLoggingThatIAmMaster implements Runnable{
 
-    private static Logger log = LoggerFactory.getLogger(SingletonInitializationAction.class);
+    private static Logger log = LoggerFactory.getLogger(ScheduleLoggingThatIAmMaster.class);
     private ScheduledExecutorService scheduledExecutorService;
 
-    public SingletonInitializationAction(ScheduledExecutorService scheduledExecutorService){
+    public ScheduleLoggingThatIAmMaster(ScheduledExecutorService scheduledExecutorService){
         this.scheduledExecutorService = scheduledExecutorService;
     }
     
